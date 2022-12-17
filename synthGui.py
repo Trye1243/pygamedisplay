@@ -2,9 +2,15 @@ import math
 from math import sin
 
 import pygame
+import serial
+
+ser = serial.Serial('COM9',115200,timeout=0.002)
+
+
 pygame.init()
 pygame.font.init()
 my_font = pygame.font.SysFont('Futura', 30)
+#clock = pygame.time.Clock()
 
 
 screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
@@ -19,7 +25,7 @@ graphUsed = pygame.Surface((780,485))
 waveType = [3, 1, 3] #0 = sin
 amp = [4096, 4096, 2000]
 phase = [0, 0, 2000]
-waves = ["Sine", "Pulse","Triangle","Ramp"]
+waves = ["Sine", "Triangle","Pulse","Ramp"]
 graphs = [graph1, graph2, graph3]
 graphValues = [[0]*640,[0]*640,[0]*640]
 combinedGraphValues = [0]*640
@@ -32,18 +38,137 @@ clrGreen = (0,255,0)
 
 
 i = 0
+firstTime = 0
+inLoop = 1
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    # #get data
+    # #txt = ser.read(2)
+    # #num = int(ser.readline())
+    # #amp[0] = num
+    # inLoop = 1
+    # combineBit = 1
+    #
+    # # while firstTime == 1 and inLoop == 1:
+    # #     combineBit = 0
+    # #     txt = ser.read(1)
+    # #     if txt == b'P':
+    # #         index = int(ser.read(1))
+    # #         phase[index] = int(ser.read(4))
+    # #         inLoop = 0
+    # #     if txt == b'A':
+    # #         index = int(ser.read(1))
+    # #         amp[index] = int(ser.read(4))
+    # #         inLoop = 0
+    # #     if txt == b'S':
+    # #         index = int(ser.read(1))
+    # #         waveType[index] = int(ser.read(1))
+    # #         inLoop = 0
+    # #     if txt == b'C':
+    # #         combineBit = 1
+    # #         inLoop = 0
+    # #     for event in pygame.event.get():
+    # #         if event.type == pygame.KEYDOWN:
+    # #             #play notes
+    # #             if event.key == pygame.K_a:
+    # #                 ser.write(b'ap')
+    # #             if event.key == pygame.K_s:
+    # #                 ser.write(b'sp')
+    # #             if event.key == pygame.K_d:
+    # #                 ser.write(b'dp')
+    # #             if event.key == pygame.K_f:
+    # #                 ser.write(b'fp')
+    # #             if event.key == pygame.K_g:
+    # #                 ser.write(b'gp')
+    # #             if event.key == pygame.K_h:
+    # #                 ser.write(b'hp')
+    # #             if event.key == pygame.K_j:
+    # #                 ser.write(b'jp')
+    # #             if event.key == pygame.K_k:
+    # #                 ser.write(b'kp')
+    # #             if event.key == pygame.K_l:
+    # #                 ser.write(b'lp')
+    # #
+    # #             #signal type changing stuff stuff
+    # #             if event.key == pygame.K_q:
+    # #                 ser.write(b'q')
+    # #             if event.key == pygame.K_w:
+    # #                 ser.write(b'w')
+    # #             if event.key == pygame.K_e:
+    # #                 ser.write(b'e')
+    # #             if event.key == pygame.K_r:
+    # #                 ser.write(b'r')
+    # #             if event.key == pygame.K_t:
+    # #                 ser.write(b't')
+    # #             if event.key == pygame.K_y:
+    # #                 ser.write(b'y')
+    # #             #combine stuff
+    # #             if event.key == pygame.K_c:
+    # #                 ser.write(b'c')
+    # #
+    # #             #sig1 inputs
+    # #             if event.key == pygame.K_1:
+    # #                 ser.write(b'1')
+    # #             if event.key == pygame.K_2:
+    # #                 ser.write(b'2')
+    # #             if event.key == pygame.K_3:
+    # #                 ser.write(b'3')
+    # #             if event.key == pygame.K_4:
+    # #                 ser.write(b'4')
+    # #
+    # #             #sig2 inputs
+    # #             if event.key == pygame.K_5:
+    # #                 ser.write(b'5')
+    # #             if event.key == pygame.K_6:
+    # #                 ser.write(b'6')
+    # #             if event.key == pygame.K_7:
+    # #                 ser.write(b'7')
+    # #             if event.key == pygame.K_8:
+    # #                 ser.write(b'8')
+    # #
+    # #             #sig 3 inputs
+    # #             if event.key == pygame.K_v:
+    # #                 ser.write(b'v')
+    # #             if event.key == pygame.K_b:
+    # #                 ser.write(b'b')
+    # #             if event.key == pygame.K_n:
+    # #                 ser.write(b'n')
+    # #             if event.key == pygame.K_m:
+    # #                 ser.write(b'm')
+    # #
+    # #             #volume
+    # #             if event.key == pygame.K_MINUS:
+    # #                 ser.write(b'-')
+    # #             if event.key == pygame.K_EQUALS:
+    # #                 ser.write(b'+')
+    # #         if event.type == pygame.KEYUP:
+    # #             if event.key == pygame.K_a:
+    # #                 ser.write(b'au')
+    # #             if event.key == pygame.K_s:
+    # #                 ser.write(b'su')
+    # #             if event.key == pygame.K_d:
+    # #                 ser.write(b'du')
+    # #             if event.key == pygame.K_f:
+    # #                 ser.write(b'fu')
+    # #             if event.key == pygame.K_g:
+    # #                 ser.write(b'gu')
+    # #             if event.key == pygame.K_h:
+    # #                 ser.write(b'hu')
+    # #             if event.key == pygame.K_j:
+    # #                 #ser.write(b'ju')
+    # #             if event.key == pygame.K_k:
+    # #                 #ser.write(b'ku')
+    # #             if event.key == pygame.K_l:
+    # #                 #ser.write(b'lu')
+                   #print(txt)
 
 
-    screen.fill(clrBlack)
+    if(firstTime == 1):
+        screen.fill(clrBlack)
     graph1.fill(clrWhite)
     graph2.fill(clrWhite)
     graph3.fill(clrWhite)
     graphCom.fill(clrWhite)
-    graphUsed.fill(clrWhite)
+    #graphUsed.fill(clrWhite)
 
     for i in range(3):
         #lines
@@ -60,7 +185,7 @@ while running:
         #actual graph
             #round values in + to range of 100px centered on 160 = 0, 620 samples
         ooga = phase[i]
-        tempPhase = round(ooga * 640 / 4695.0)
+        tempPhase = round(ooga * 620 / 4096.0)
         tempAmp = amp[i] / 4096.0
         if(waveType[i] == 0):
             #print(tempPhase)
@@ -69,7 +194,7 @@ while running:
                 tphase = ((x + tempPhase) % 620) * (math.pi / 310)
                 graphValues[i][x] = -round(sin(tphase) * tempAmp * 100)
 
-        if(waveType[i]==1):
+        if(waveType[i]==2):
             for x in range(620):
                 tPhase = ((x + tempPhase) % 620)
                 if tPhase > 206 and tPhase < 412:
@@ -77,7 +202,7 @@ while running:
                 else:
                     graphValues[i][x] = 100 * tempAmp
 
-        if(waveType[i]==2):
+        if(waveType[i]==1):
             for x in range(620):
                 tPhase = ((x + tempPhase) % 620)
                 if tPhase < 310:
@@ -153,12 +278,14 @@ while running:
 
 
     #for now just copy over
-    graphUsed.blit(graphCom,(0,0))
+    if (combineBit == 1):
+        graphUsed.blit(graphCom,(0,0))
+        text_surface = my_font.render("Output Waveform", False, clrBlack)
+        graphUsed.blit(text_surface, (0, 0))
 
     text_surface = my_font.render("Temp Waveform", False, clrBlack)
     graphCom.blit(text_surface, (0, 0))
-    text_surface = my_font.render("Output Waveform", False, clrBlack)
-    graphUsed.blit(text_surface, (0, 0))
+
     #pygame.draw.circle(screen, (i, 0, 255), (250, 250), 75)
     #graph1.blit(text_surface, (0, 250))
     screen.blit(graph1, (20,40))
@@ -169,6 +296,7 @@ while running:
 
     # Flip the display
     pygame.display.flip()
+    firstTime = 1
 
 # Done! Time to quit.
 pygame.quit()
